@@ -184,7 +184,14 @@ int SDL_RenderSprite(SDL_Renderer* ren, SDL_Sprite* spr){
     .h = spr->size.y * spr->scale.y,
   };
 
-  const SDL_RendererFlip flip = spr->vflip? SDL_FLIP_VERTICAL : spr->hflip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+  SDL_RendererFlip flip = SDL_FLIP_NONE;
+  if (spr->vflip && spr->hflip){
+    flip = SDL_FLIP_VERTICAL | SDL_FLIP_HORIZONTAL;
+  } else if (spr->vflip){
+    flip = SDL_FLIP_VERTICAL;
+  } else if (spr->hflip){
+    flip = SDL_FLIP_HORIZONTAL;
+  }
 
   if (SDL_RenderCopyExF(ren, spr->tex, &spr->ren_rect, &dstrect, spr->angle, &scaled_origin, flip) < 0){
     fprintf(stderr, "ERROR: SDL_RenderCopyF() -> %s\n", SDL_GetError());

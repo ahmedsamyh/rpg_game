@@ -65,6 +65,14 @@ int main(void){
       } else if (e.type == SDL_MOUSEMOTION){
 	unscaled_mpos.x = (float)e.motion.x;
 	unscaled_mpos.y = (float)e.motion.y;
+      } else if (e.type == SDL_KEYDOWN){
+	if (e.key.keysym.scancode == SDL_SCANCODE_SPACE){
+	  spr.vflip = !spr.vflip;
+	}
+
+	if (e.key.keysym.scancode == SDL_SCANCODE_A){
+	  spr.hflip = !spr.hflip;
+	}
       }
     }
 
