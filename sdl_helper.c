@@ -130,7 +130,7 @@ SDL_FPoint v2f_mul(SDL_FPoint v1, SDL_FPoint v2){
 }
 
 // Sprite
-int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, SDL_Renderer* ren){
+int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, size_t hframes, size_t vframes, SDL_Renderer* ren){
   int w,h,n;
   spr->data = stbi_load(filename, &w, &h, &n, 4);
   if (spr->data == NULL){
@@ -141,16 +141,25 @@ int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, SDL_Renderer* ren){
   spr->origin = (SDL_FPoint){0.f, 0.f};
   spr->pos =  (SDL_FPoint){0.f, 0.f};
   spr->size = (SDL_FPoint){(float)w, (float)h};
-  spr->ren_rect = (SDL_Rect){
-    .x = 0,
-    .y = 0,
-    .w = (int)spr->size.x,
-    .h = (int)spr->size.y,
-  };
   spr->scale = (SDL_FPoint){1.f, 1.f};
   spr->angle = 0.f;
   spr->vflip = false;
   spr->hflip = false;
+  spr->vframe = 0;
+  spr->hframe = 0;
+  spr->vframes = vframes;
+  spr->hframes = hframes;
+  spr->ren_rect = (SDL_Rect){
+    .x = 0,
+    .y = 0,
+    .w = (int)spr->size.x / hframes,
+    .h = (int)spr->size.y / vframes,
+  };
+  spr->time_per_frame = 0.15f;
+  spr->accumulated = 0.f;
+
+  SDL_SpriteSetHFrame(spr, spr->hframe);
+  SDL_SpriteSetVFrame(spr, spr->vframe);
 
   spr->tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, w, h);
   if (spr->tex == NULL){
@@ -180,8 +189,8 @@ int SDL_RenderSprite(SDL_Renderer* ren, SDL_Sprite* spr){
   const SDL_FRect dstrect = {
     .x = spr->pos.x - scaled_origin.x,
     .y = spr->pos.y - scaled_origin.y,
-    .w = spr->size.x * spr->scale.x,
-    .h = spr->size.y * spr->scale.y,
+    .w = spr->ren_rect.w * spr->scale.x,
+    .h = spr->ren_rect.h * spr->scale.y,
   };
 
   SDL_RendererFlip flip = SDL_FLIP_NONE;
@@ -216,4 +225,26 @@ void SDL_SpriteSetScale(SDL_Sprite* spr, SDL_FPoint* scl){
   if (scl->y < SPR_MIN_SCALE) scl->y = SPR_MIN_SCALE;
   spr->scale.x = scl->x;
   spr->scale.y = scl->y;
+}
+
+void SDL_SpriteSetHFrame(SDL_Sprite* spr, size_t hframe){
+  if (hframe > spr->hframes-1) hframe = spr->hframes;
+  spr->hframe = hframe;
+  spr->ren_rect.x = hframe*spr->ren_rect.w;
+}
+
+void SDL_SpriteSetVFrame(SDL_Sprite* spr, size_t vframe){
+  if (vframe > spr->vframes-1) vframe = spr->vframes;
+  spr->vframe = vframe;
+  spr->ren_rect.y = vframe*spr->ren_rect.h;
+}
+
+void SDL_SpriteAnimate(SDL_Sprite* spr, float delta){
+  spr->accumulated += delta;
+
+  if (spr->accumulated >= spr->time_per_frame){
+    spr->accumulated -= spr->time_per_frame;
+
+    SDL_SpriteSetHFrame(spr, (spr->hframe+1)%(spr->hframes-1));
+  }
 }

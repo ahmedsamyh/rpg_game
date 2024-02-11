@@ -35,11 +35,9 @@ int main(void){
   SDL_FPoint mpos = {0};
   SDL_FPoint unscaled_mpos = {0};
 
-  const char* filename = "spawn_cmd.png";
-
   SDL_Sprite spr = {0};
 
-  if (SDL_LoadSprite(&spr, filename, ren) < 0){
+  if (SDL_LoadSprite(&spr, "resources/khu_sheet.png", 3, 1, ren) < 0){
     quit = true;
   }
 
@@ -109,15 +107,7 @@ int main(void){
     /*   quit = true; */
     /* } */
 
-    const SDL_FRect r = {
-      .x = mpos.x - 50.f,
-      .y = mpos.y - 50.f,
-      .w = 100.f,
-      .h = 100.f,
-    };
-    if (SDL_RenderFillRectFColorPacked(ren, &r, SDL_GREEN) < 0){
-      quit = true;
-    }
+    SDL_SpriteAnimate(&spr, delta);
 
     if (SDL_RenderSprite(ren, &spr) < 0){
       quit = true;

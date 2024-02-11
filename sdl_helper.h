@@ -42,7 +42,11 @@ typedef struct {
   SDL_FPoint scale;
   bool vflip;
   bool hflip;
+  float time_per_frame;
+  float accumulated;
   float angle;
+  size_t hframe, vframe;
+  size_t hframes, vframes;
   unsigned char* data;
   SDL_Rect ren_rect;
   SDL_Texture* tex;
@@ -50,11 +54,13 @@ typedef struct {
 
 #define SPR_MIN_SCALE (0.1f)
 
-int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, SDL_Renderer* ren);
+int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, size_t hframes, size_t vframes, SDL_Renderer* ren);
 int SDL_RenderSprite(SDL_Renderer* ren, SDL_Sprite* spr);
 void SDL_DestroySprite(SDL_Sprite* spr);
 void SDL_SpriteCenterOrigin(SDL_Sprite* spr);
 void SDL_SpriteSetScale(SDL_Sprite* spr, SDL_FPoint* scl);
-
+void SDL_SpriteSetHFrame(SDL_Sprite* spr, size_t hframe);
+void SDL_SpriteSetVFrame(SDL_Sprite* spr, size_t vframe);
+void SDL_SpriteAnimate(SDL_Sprite* spr, float delta);
 
 #endif /* _SDL_HELPER_H_ */
