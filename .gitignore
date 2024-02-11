@@ -1,0 +1,4 @@
+*.exe
+*.dll
+SDL2/lib
+NUL
