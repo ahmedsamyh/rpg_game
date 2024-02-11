@@ -37,15 +37,6 @@ int main(void){
 
   const char* filename = "spawn_cmd.png";
 
-  /* int w,h,n; */
-  /* unsigned char *data = stbi_load(filename, &w, &h, &n, 4); */
-
-  /* if (data == NULL){ */
-  /*   fprintf(stderr, "ERROR: Could not load image %s\n", filename); */
-  /*   exit(1); */
-  /* } */
-  /* printf("INFO: Image '%s' loaded\n", filename); */
-
   SDL_Sprite spr = {0};
 
   if (SDL_LoadSprite(&spr, filename, ren) < 0){
@@ -60,23 +51,6 @@ int main(void){
     fprintf(stderr, "ERROR: SDL_SetRenderDrawBlendMode() -> %s\n", SDL_GetError());
     quit = true;
   }
-
-  SDL_BlendMode blendmode;
-  if (SDL_GetRenderDrawBlendMode(ren, &blendmode) < 0){
-    fprintf(stderr, "ERROR: SDL_GetRenderDrawBlendMode() -> %s\n", SDL_GetError());
-    quit = true;
-  }
-
-  switch (blendmode){
-  case SDL_BLENDMODE_NONE: printf("blendmode: SDL_BLENDMODE_NONE\n"); break;
-  case SDL_BLENDMODE_BLEND: printf("blendmode: SDL_BLENDMODE_BLEND\n"); break;
-  case SDL_BLENDMODE_ADD: printf("blendmode: SDL_BLENDMODE_ADD\n"); break;
-  case SDL_BLENDMODE_MOD: printf("blendmode: SDL_BLENDMODE_MOD\n"); break;
-  case SDL_BLENDMODE_MUL: printf("blendmode: SDL_BLENDMODE_MUL\n"); break;
-  case SDL_BLENDMODE_INVALID: printf("blendmode: SDL_BLENDMODE_INVALID\n"); break;
-  }
-
-  /* quit = true; */
 
   while (!quit){
 

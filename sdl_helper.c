@@ -158,6 +158,11 @@ int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, SDL_Renderer* ren){
     return -1;
   }
 
+  if (SDL_SetTextureBlendMode(spr->tex, SDL_BLENDMODE_BLEND) < 0){
+    fprintf(stderr, "ERROR: SDL_SetTextureBlendMode() -> %s\n", SDL_GetError());
+    return -1;
+  }
+
   if (SDL_UpdateTexture(spr->tex, NULL, spr->data, n*w) < 0){
     fprintf(stderr, "ERROR: Could not update texture: %s\n", SDL_GetError());
     return -1;
