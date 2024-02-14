@@ -100,6 +100,72 @@ int SDL_RenderFillRectFColorPacked(SDL_Renderer* ren, const SDL_FRect* rect, uin
   return 0;
 }
 
+int TTF_RenderText_BlendedColor(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+  SDL_Color color = {
+  .r = r,
+  .g = g,
+  .b = b,
+  .a = a
+};
+  text_surface = TTF_RenderText_Blended(font, text, color);
+  if (text_surface == NULL){
+    fprintf(stderr, "ERROR: TTF_RenderText_Solid() -> %s\n", TTF_GetError());
+    return -1;
+  }
+
+  SDL_Texture *text_tex = SDL_CreateTextureFromSurface(ren, text_surface);
+
+  const SDL_FRect tex_rect = {
+    .x = pos.x,
+      .y = pos.y,
+      .w = (float)text_surface->clip_rect.w,
+      .h = (float)text_surface->clip_rect.h,
+  };
+
+  if (SDL_RenderCopyF(ren, text_tex, NULL, &tex_rect) < 0){
+    fprintf(stderr, "ERROR: SDL_RenderCopyF() -> %s\n", SDL_GetError());
+    return -1;
+  }
+
+  SDL_FreeSurface(text_surface);
+  return 0;
+}
+
+int TTF_RenderText_BlendedColorPacked(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, uint32_t color){
+  text_surface = TTF_RenderText_Blended(font, text, *(SDL_Color*)&color);
+  if (text_surface == NULL){
+    fprintf(stderr, "ERROR: TTF_RenderText_Solid() -> %s\n", TTF_GetError());
+    return -1;
+  }
+
+  SDL_Texture *text_tex = SDL_CreateTextureFromSurface(ren, text_surface);
+
+  const SDL_FRect tex_rect = {
+    .x = pos.x,
+    .y = pos.y,
+    .w = (float)text_surface->clip_rect.w,
+    .h = (float)text_surface->clip_rect.h,
+  };
+
+  if (SDL_RenderCopyF(ren, text_tex, NULL, &tex_rect) < 0){
+    fprintf(stderr, "ERROR: SDL_RenderCopyF() -> %s\n", SDL_GetError());
+    return -1;
+  }
+
+  SDL_FreeSurface(text_surface);
+  return 0;
+}
+
+int TTF_RenderTextF_BlendedColor(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+  return 0;
+}
+
+int TTF_RenderTextF_BlendedColorPacked(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, uint32_t color){
+
+  return 0;
+}
+
+
 // Vector
 SDL_FPoint v2f_add(SDL_FPoint v1, SDL_FPoint v2){
   return (SDL_FPoint){
@@ -108,8 +174,19 @@ SDL_FPoint v2f_add(SDL_FPoint v1, SDL_FPoint v2){
   };
 }
 
+SDL_FPoint v2f_sub(SDL_FPoint v1, SDL_FPoint v2){
+    return (SDL_FPoint){
+    .x = v1.x - v2.x,
+    .y = v1.y - v2.y,
+  };
+}
+
 float v2f_mag(SDL_FPoint v){
   return sqrtf(v.x*v.x+v.y*v.y);
+}
+
+float v2f_mag2(SDL_FPoint v){
+  return v.x*v.x + v.y*v.y;
 }
 
 SDL_FPoint v2f_normalize(SDL_FPoint v){
@@ -126,6 +203,13 @@ SDL_FPoint v2f_mul(SDL_FPoint v1, SDL_FPoint v2){
   return (SDL_FPoint){
     .x = v1.x * v2.x,
     .y = v1.y * v2.y,
+  };
+}
+
+SDL_FPoint v2f_mul_scalar(SDL_FPoint v1, float s){
+  return (SDL_FPoint){
+    .x = v1.x * s,
+    .y = v1.y * s,
   };
 }
 
@@ -245,6 +329,13 @@ void SDL_SpriteAnimate(SDL_Sprite* spr, float delta){
   if (spr->accumulated >= spr->time_per_frame){
     spr->accumulated -= spr->time_per_frame;
 
-    SDL_SpriteSetHFrame(spr, (spr->hframe+1)%(spr->hframes-1));
+    SDL_SpriteSetHFrame(spr, (spr->hframe+1)%(spr->hframes));
   }
+}
+
+// Math
+float randomf(float start, float end){
+  float r = (float)rand() / (float)RAND_MAX; // 0..1
+
+  return start + r*(end-start);
 }
