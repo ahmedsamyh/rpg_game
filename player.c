@@ -25,8 +25,8 @@ int Player_init(Player* p, SDL_Renderer* ren){
   p->hitbox = (SDL_FRect){0.f, 0.f, actual_size, actual_size};
   p->max_hp = 30.f;
   p->max_mp = 10.f;
-  p->hp = 0.f;
-  p->mp = 0.f;
+  p->hp = p->max_hp;
+  p->mp = p->max_mp;
 
   return 0;
 }
@@ -66,7 +66,6 @@ void Player_update(Player* p, float delta){
     else
       p->spr.pos.y = hit_collbox.y + hit_collbox.h + p->hitbox.h * 0.5f;
   }
-
   if (caxis != COLL_AXIS_HORIZONTAL){
     p->spr.pos.x = next_pos.x;
   } else {
@@ -76,6 +75,11 @@ void Player_update(Player* p, float delta){
       p->spr.pos.x = hit_collbox.x - p->hitbox.w * 0.5f;
     else
       p->spr.pos.x = hit_collbox.x + hit_collbox.w + p->hitbox.w * 0.5f;
+  }
+
+  if (caxis != COLL_AXIS_NONE){
+    p->hp -= 0.1f;
+    if (p->hp < 0.f) p->hp = 0.f;
   }
 
   // update hitbox pos
@@ -95,6 +99,23 @@ int Player_draw(Player* p, bool debug){
 
   if (debug){
     SDL_RenderDrawRectFColorPacked(p->ren, &p->hitbox, SDL_RED);
+
+    // draw hp bar
+    float padding = 10.f;
+    float bar_height = 3.f;
+    float bar_width = p->hitbox.w;
+    const SDL_FRect mp_rect = {
+      .x = p->hitbox.x,
+      .y = p->hitbox.y - bar_height - padding,
+      .w = (p->mp / p->max_mp)*bar_width,
+      .h = bar_height,
+    };
+    SDL_RenderFillRectFColorPacked(p->ren, &mp_rect, SDL_BLUE);
+
+    SDL_FRect hp_rect = mp_rect;
+    hp_rect.w = (p->hp / p->max_hp)*bar_width;
+    hp_rect.y -= padding;
+    SDL_RenderFillRectFColorPacked(p->ren, &hp_rect, SDL_GREEN);
   }
 
   return 0;

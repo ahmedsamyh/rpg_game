@@ -15,7 +15,7 @@
 
 SDL_FRect* collboxes = NULL;
 
-// TODO: Check commit 7e9f5fc
+// TODO: Check commit 0237f99f16e112d7f510bf98ce9d3a235a23aa4d
 
 int main(int argc, char* argv[]){
   SDL_SetMainReady();
