@@ -5,8 +5,8 @@
 #include "collision.h"
 #include "globals.h"
 
-int Player_init(Player* p, SDL_Renderer* ren){
-  if (SDL_LoadSprite(&p->spr, "resources/youko-sheet.png", 2, 4, ren) < 0){
+int Player_init(Player* p,  SDL_Texture_wrapper* tex_wrap, SDL_Renderer* ren){
+  if (SDL_LoadSprite(&p->spr, tex_wrap, 2, 4, ren) < 0){
     return -1;
   }
   SDL_SpriteCenterOrigin(&p->spr);
@@ -154,7 +154,7 @@ void Player_animate(Player* p){
 }
 
 void Player_destroy(Player* p){
-  SDL_DestroySprite(&p->spr);
+
 }
 
 void Player_adjust_pos_to_hitbox(Player* p){

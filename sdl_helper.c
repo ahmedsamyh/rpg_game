@@ -1,8 +1,11 @@
+#include <SDL2/SDL.h>
 #include "sdl_helper.h"
 #include <stdio.h>
 #include <math.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "stb_ds.h"
+#include "globals.h"
 
 // Rendering
 int SDL_SetRenderDrawColorPacked(SDL_Renderer* ren, uint32_t color){
@@ -212,19 +215,47 @@ SDL_FPoint v2f_mul_scalar(SDL_FPoint v1, float s){
     .y = v1.y * s,
   };
 }
-
-// Sprite
-int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, size_t hframes, size_t vframes, SDL_Renderer* ren){
-  int w,h,n;
-  spr->data = stbi_load(filename, &w, &h, &n, 4);
-  if (spr->data == NULL){
-    fprintf(stderr, "ERROR: Could not load image '%s'\n", filename);
-    return -1;
+// Texture
+SDL_Texture_wrapper* SDL_TextureLoad(SDL_Renderer* ren, const char* filename){
+  if (shgeti(texture_map, filename) >= 0){
+    return &shgetp_null(texture_map, filename)->value;
   }
 
+  SDL_Texture_wrapper tex_wrap = {0};
+  tex_wrap.data = stbi_load(filename, &tex_wrap.w, &tex_wrap.h, &tex_wrap.n, 4);
+  if (tex_wrap.data == NULL){
+    fprintf(stderr, "ERROR: Could not load image '%s'\n", filename);
+    return NULL;
+  }
+
+  tex_wrap.tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, tex_wrap.w, tex_wrap.h);
+  if (tex_wrap.tex == NULL){
+    fprintf(stderr, "ERROR: Could not create texture: %s\n", SDL_GetError());
+    return NULL;
+  }
+
+  if (SDL_SetTextureBlendMode(tex_wrap.tex, SDL_BLENDMODE_BLEND) < 0){
+    fprintf(stderr, "ERROR: SDL_SetTextureBlendMode() -> %s\n", SDL_GetError());
+    return NULL;
+  }
+
+  if (SDL_UpdateTexture(tex_wrap.tex, NULL, tex_wrap.data, tex_wrap.n*tex_wrap.w) < 0){
+    fprintf(stderr, "ERROR: Could not update texture: %s\n", SDL_GetError());
+    return NULL;
+  }
+
+  shput(texture_map, filename, tex_wrap);
+
+  return &shgetp_null(texture_map, filename)->value;
+}
+
+// Sprite
+int SDL_LoadSprite(SDL_Sprite* spr,  SDL_Texture_wrapper* tex_wrap, size_t hframes, size_t vframes, SDL_Renderer* ren){
+
+  spr->tex_wrap = tex_wrap;
   spr->origin = (SDL_FPoint){0.f, 0.f};
   spr->pos =  (SDL_FPoint){0.f, 0.f};
-  spr->size = (SDL_FPoint){(float)w, (float)h};
+  spr->size = (SDL_FPoint){(float)tex_wrap->w, (float)tex_wrap->h};
   spr->scale = (SDL_FPoint){1.f, 1.f};
   spr->angle = 0.f;
   spr->vflip = false;
@@ -244,22 +275,6 @@ int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, size_t hframes, size_t
 
   SDL_SpriteSetHFrame(spr, spr->hframe);
   SDL_SpriteSetVFrame(spr, spr->vframe);
-
-  spr->tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, w, h);
-  if (spr->tex == NULL){
-    fprintf(stderr, "ERROR: Could not create texture: %s\n", SDL_GetError());
-    return -1;
-  }
-
-  if (SDL_SetTextureBlendMode(spr->tex, SDL_BLENDMODE_BLEND) < 0){
-    fprintf(stderr, "ERROR: SDL_SetTextureBlendMode() -> %s\n", SDL_GetError());
-    return -1;
-  }
-
-  if (SDL_UpdateTexture(spr->tex, NULL, spr->data, n*w) < 0){
-    fprintf(stderr, "ERROR: Could not update texture: %s\n", SDL_GetError());
-    return -1;
-  }
 
   return 0;
 }
@@ -286,17 +301,12 @@ int SDL_RenderSprite(SDL_Renderer* ren, SDL_Sprite* spr){
     flip = SDL_FLIP_HORIZONTAL;
   }
 
-  if (SDL_RenderCopyExF(ren, spr->tex, &spr->ren_rect, &dstrect, spr->angle, &scaled_origin, flip) < 0){
+  if (SDL_RenderCopyExF(ren, spr->tex_wrap->tex, &spr->ren_rect, &dstrect, spr->angle, &scaled_origin, flip) < 0){
     fprintf(stderr, "ERROR: SDL_RenderCopyF() -> %s\n", SDL_GetError());
     return -1;
   }
 
   return 0;
-}
-
-void SDL_DestroySprite(SDL_Sprite* spr){
-  SDL_DestroyTexture(spr->tex);
-  stbi_image_free(spr->data);
 }
 
 void SDL_SpriteCenterOrigin(SDL_Sprite* spr){

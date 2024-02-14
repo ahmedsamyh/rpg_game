@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
+#include "SDL_Texture_wrapper.h"
 
 #define PI 3.1415f
 
@@ -48,6 +49,9 @@ SDL_FPoint v2f_normalize(SDL_FPoint v);
 SDL_FPoint v2f_mul(SDL_FPoint v1, SDL_FPoint v2);
 SDL_FPoint v2f_mul_scalar(SDL_FPoint v1, float s);
 
+// Texture
+SDL_Texture_wrapper* SDL_TextureLoad(SDL_Renderer* ren, const char* filename);
+
 // Sprite
 typedef struct {
   SDL_FPoint pos;
@@ -61,16 +65,14 @@ typedef struct {
   float angle;
   size_t hframe, vframe;
   size_t hframes, vframes;
-  unsigned char* data;
   SDL_Rect ren_rect;
-  SDL_Texture* tex;
+  SDL_Texture_wrapper* tex_wrap;
 } SDL_Sprite;
 
 #define SPR_MIN_SCALE (0.1f)
 
-int SDL_LoadSprite(SDL_Sprite* spr, const char* filename, size_t hframes, size_t vframes, SDL_Renderer* ren);
+int SDL_LoadSprite(SDL_Sprite* spr, SDL_Texture_wrapper* tex_wrap, size_t hframes, size_t vframes, SDL_Renderer* ren);
 int SDL_RenderSprite(SDL_Renderer* ren, SDL_Sprite* spr);
-void SDL_DestroySprite(SDL_Sprite* spr);
 void SDL_SpriteCenterOrigin(SDL_Sprite* spr);
 void SDL_SpriteSetScale(SDL_Sprite* spr, SDL_FPoint* scl);
 void SDL_SpriteSetHFrame(SDL_Sprite* spr, size_t hframe);

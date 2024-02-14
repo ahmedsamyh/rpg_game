@@ -16,7 +16,7 @@ typedef struct {
   float mp, max_mp;
 } Player;
 
-int Player_init(Player* p, SDL_Renderer* ren);
+int Player_init(Player* p,  SDL_Texture_wrapper* tex_wrap, SDL_Renderer* ren);
 void Player_update(Player* p, float delta);
 int Player_draw(Player* p, bool debug);
 void Player_control(Player* p);

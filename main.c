@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "sdl_helper.h"
@@ -12,8 +11,11 @@
 #define STB_DS_IMPLEMENTATION
 #include "stb_ds.h"
 #include "globals.h"
+#include "tile.h"
+#include "config.h"
 
 SDL_FRect* collboxes = NULL;
+SDL_Texture_wrapper_KV* texture_map;
 
 // TODO: Check commit 0237f99f16e112d7f510bf98ce9d3a235a23aa4d
 
@@ -78,7 +80,10 @@ int main(int argc, char* argv[]){
 
   Player p = {0};
 
-  if (Player_init(&p, ren) < 0){
+  if (SDL_TextureLoad(ren, "resources/youko-sheet.png") == NULL) { quit = true; }
+  if (Tile_load_all_tiles(ren) < 0) { quit = true; }
+
+  if (Player_init(&p, SDL_TextureLoad(ren, "resources/youko-sheet.png"), ren) < 0){
     quit = true;
   }
 
@@ -87,12 +92,26 @@ int main(int argc, char* argv[]){
 
   int hovering_box_idx = -1;
 
-  arrput(collboxes, ((SDL_FRect) {
-    .x = 100.f,
-    .y = 100.f,
-    .w = 50.f,
-    .h = 100.f
-      }));
+  Tile* tiles = NULL;
+
+  const size_t rows = (int)width / TILE_SIZE;
+  const size_t cols = (int)height / TILE_SIZE;
+
+  for (size_t y = 0; y < rows; ++y){
+    for (size_t x = 0; x < cols; ++x){
+      Tile t = {0};
+
+      if (Tile_init(&t, TILE_TYPE_NONE, false, ren) < 0){
+	quit = true;
+      }
+
+      t.spr.pos.x = x*TILE_SIZE;
+      t.spr.pos.y = y*TILE_SIZE;
+
+      arrput(tiles, t);
+    }
+  }
+
 
   while (!quit){
 
@@ -123,23 +142,6 @@ int main(int argc, char* argv[]){
 	if (e.key.keysym.scancode == SDL_SCANCODE_TILDE){
 	  DEBUG_DRAW = !DEBUG_DRAW;
 	}
-	if (e.key.keysym.scancode == SDL_SCANCODE_Z){
-	  for (size_t i = 0; i < 1; ++i){
-	    // add 1 new collboxes
-	    arrput(collboxes, ((SDL_FRect) {
-		  .x = mpos.x,
-		  .y = mpos.y,
-		  .w = randomf(10.f, 150.f),
-		  .h = randomf(10.f, 150.f),
-		}));
-	  }
-	}
-	if (e.key.keysym.scancode == SDL_SCANCODE_X){
-	  // delete hovering box
-	  if (hovering_box_idx >= 0){
-	    arrdel(collboxes, hovering_box_idx);
-	  }
-	}
       }
     }
 
@@ -152,6 +154,13 @@ int main(int argc, char* argv[]){
     SDL_RenderClearColorPacked(ren, 0xFF141414);
 
     Player_update(&p, delta);
+
+    for (size_t i = 0; i < arrlenu(tiles); ++i){
+      Tile t = tiles[i];
+      if (Tile_draw(&t, DEBUG_DRAW) < 0){
+	quit = true;
+      }
+    }
 
     if (Player_draw(&p, DEBUG_DRAW) < 0){
       quit = true;
@@ -166,9 +175,9 @@ int main(int argc, char* argv[]){
 	hovering_box_idx = (int)i;
 	hovering = true;
       }
-      if (SDL_RenderDrawRectFColorPacked(ren, box, coll ? SDL_GREEN : mcoll ? SDL_BLUE : SDL_RED) < 0){
-	quit = true;
-      }
+      /* if (SDL_RenderDrawRectFColorPacked(ren, box, coll ? SDL_GREEN : mcoll ? SDL_BLUE : SDL_RED) < 0){ */
+      /* 	quit = true; */
+      /* } */
 
       if (Resolve_rect_rect_collision(&p.hitbox, *box)){
 	Player_adjust_pos_to_hitbox(&p);
@@ -176,10 +185,12 @@ int main(int argc, char* argv[]){
     }
     if (!hovering) hovering_box_idx = -1;
 
+
     SDL_RenderPresent(ren);
   }
 
   Player_destroy(&p);
+  arrfree(collboxes);
 
   SDL_DestroyRenderer(ren);
   SDL_DestroyWindow(win);
