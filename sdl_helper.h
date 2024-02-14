@@ -1,10 +1,18 @@
 #ifndef _SDL_HELPER_H_
 #define _SDL_HELPER_H_
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
 #define PI 3.1415f
+
+// Tmp buffer
+#define TMP_BUFF_CAP (1024*32)
+static char tmp_buff[TMP_BUFF_CAP] = {0};
+
+// tilde key is called grave in sdl
+#define SDL_SCANCODE_TILDE SDL_SCANCODE_GRAVE
 
 // Colors
 #define SDL_RED (0xFF0000FF)
@@ -18,6 +26,8 @@
 #define CIRCLE_POINTS_CAP 30
 static SDL_FPoint circle_points[CIRCLE_POINTS_CAP+1] = {0};
 
+static SDL_Surface* text_surface = NULL;
+
 int SDL_SetRenderDrawColorPacked(SDL_Renderer* ren, uint32_t color);
 int SDL_RenderClearColor(SDL_Renderer* ren, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 int SDL_RenderClearColorPacked(SDL_Renderer* ren, uint32_t color);
@@ -26,13 +36,17 @@ int SDL_RenderDrawRectFColorPacked(SDL_Renderer* ren, const SDL_FRect* rect, uin
 int SDL_RenderFillRectFColor(SDL_Renderer* ren, const SDL_FRect* rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 int SDL_RenderFillRectFColorPacked(SDL_Renderer* ren, const SDL_FRect* rect, uint32_t color);
 int SDL_RenderCircleF(SDL_Renderer* ren, SDL_FPoint pos, float radius);
+int TTF_RenderText_BlendedColor(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+int TTF_RenderText_BlendedColorPacked(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, uint32_t color);
 
 // Vector
 SDL_FPoint v2f_add(SDL_FPoint v1, SDL_FPoint v2);
+SDL_FPoint v2f_sub(SDL_FPoint v1, SDL_FPoint v2);
 float v2f_mag(SDL_FPoint v);
+float v2f_mag2(SDL_FPoint v);
 SDL_FPoint v2f_normalize(SDL_FPoint v);
 SDL_FPoint v2f_mul(SDL_FPoint v1, SDL_FPoint v2);
-
+SDL_FPoint v2f_mul_scalar(SDL_FPoint v1, float s);
 
 // Sprite
 typedef struct {
@@ -62,5 +76,8 @@ void SDL_SpriteSetScale(SDL_Sprite* spr, SDL_FPoint* scl);
 void SDL_SpriteSetHFrame(SDL_Sprite* spr, size_t hframe);
 void SDL_SpriteSetVFrame(SDL_Sprite* spr, size_t vframe);
 void SDL_SpriteAnimate(SDL_Sprite* spr, float delta);
+
+// Math
+float randomf(float start, float end);
 
 #endif /* _SDL_HELPER_H_ */
