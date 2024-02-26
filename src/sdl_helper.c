@@ -7,6 +7,18 @@
 #include "stb_ds.h"
 #include "globals.h"
 
+// Mouse
+void Mouse_init(Mouse* m, SDL_Renderer* ren){
+  m->ren = ren;
+}
+
+void Mouse_button_update(Mouse* m) {
+  float sx, sy;
+  SDL_RenderGetScale(m->ren, &sx, &sy);
+  m->pos.x = m->unscaled_pos.x / sx;
+  m->pos.y = m->unscaled_pos.y / sy;
+}
+
 // Rendering
 int SDL_SetRenderDrawColorPacked(SDL_Renderer* ren, uint32_t color){
   Uint8 r = (uint8_t)((color >> (8*0)) & 0xFF);
@@ -53,6 +65,18 @@ int SDL_RenderCircleF(SDL_Renderer* ren, SDL_FPoint pos, float radius){
     fprintf(stderr, "ERROR: SDL_RenderDrawLinesF() -> %s\n", SDL_GetError());
     return -1;
   }
+  return 0;
+}
+
+int SDL_RenderCircleFColor(SDL_Renderer* ren, SDL_FPoint pos, float radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+  if (SDL_SetRenderDrawColor(ren, r, b, g, a) < 0) return -1;
+  if (SDL_RenderCircleF(ren, pos, radius) < 0) return -1;
+  return 0;
+}
+
+int SDL_RenderCircleFColorPacked(SDL_Renderer* ren, SDL_FPoint pos, float radius, uint32_t color){
+  if (SDL_SetRenderDrawColorPacked(ren, color) < 0) return -1;
+  if (SDL_RenderCircleF(ren, pos, radius) < 0) return -1;
   return 0;
 }
 
@@ -216,13 +240,50 @@ SDL_FPoint v2f_mul_scalar(SDL_FPoint v1, float s){
   };
 }
 // Texture
-SDL_Texture_wrapper* SDL_TextureLoad(SDL_Renderer* ren, const char* filename){
+SDL_Texture_wrapper* SDL_LoadTexture(SDL_Renderer* ren, const char* filename){
+  return SDL_LoadTextureFromFile(ren, filename);
+}
+
+SDL_Texture_wrapper* SDL_LoadTextureFromFile(SDL_Renderer* ren, const char* filename){
   if (shgeti(texture_map, filename) >= 0){
     return &shgetp_null(texture_map, filename)->value;
   }
 
   SDL_Texture_wrapper tex_wrap = {0};
   tex_wrap.data = stbi_load(filename, &tex_wrap.w, &tex_wrap.h, &tex_wrap.n, 4);
+  if (tex_wrap.data == NULL){
+    fprintf(stderr, "ERROR: Could not load image '%s'\n", filename);
+    return NULL;
+  }
+
+  tex_wrap.tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, tex_wrap.w, tex_wrap.h);
+  if (tex_wrap.tex == NULL){
+    fprintf(stderr, "ERROR: Could not create texture: %s\n", SDL_GetError());
+    return NULL;
+  }
+
+  if (SDL_SetTextureBlendMode(tex_wrap.tex, SDL_BLENDMODE_BLEND) < 0){
+    fprintf(stderr, "ERROR: SDL_SetTextureBlendMode() -> %s\n", SDL_GetError());
+    return NULL;
+  }
+
+  if (SDL_UpdateTexture(tex_wrap.tex, NULL, tex_wrap.data, tex_wrap.n*tex_wrap.w) < 0){
+    fprintf(stderr, "ERROR: Could not update texture: %s\n", SDL_GetError());
+    return NULL;
+  }
+
+  shput(texture_map, filename, tex_wrap);
+
+  return &shgetp_null(texture_map, filename)->value;
+}
+
+SDL_Texture_wrapper* SDL_LoadTextureFromMemory(SDL_Renderer* ren, unsigned char* data, size_t data_size, const char* filename){
+  if (shgeti(texture_map, filename) >= 0){
+    return &shgetp_null(texture_map, filename)->value;
+  }
+
+  SDL_Texture_wrapper tex_wrap = {0};
+  tex_wrap.data = stbi_load_from_memory(data, data_size,  &tex_wrap.w, &tex_wrap.h, &tex_wrap.n, 4);
   if (tex_wrap.data == NULL){
     fprintf(stderr, "ERROR: Could not load image '%s'\n", filename);
     return NULL;

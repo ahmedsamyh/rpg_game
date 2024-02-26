@@ -162,3 +162,47 @@ void Player_adjust_pos_to_hitbox(Player* p){
   p->spr.pos.y = p->hitbox.y + p->hitbox.h * 0.5f;
 
 }
+
+int Player_draw_ui(Player* p, bool debug){
+  if (debug){
+    // draw icon
+    const SDL_FRect icon_rect = {
+      .x = (float)PLAYER_ICON_PADDING,
+      .y = (float)height - (float)PLAYER_ICON_SIZE - (float)PLAYER_ICON_PADDING,
+      .w = (float)PLAYER_ICON_SIZE,
+      .h = (float)PLAYER_ICON_SIZE,
+    };
+    if (SDL_RenderFillRectFColorPacked(p->ren, &icon_rect, 0xFF1414FF) < 0)
+      return -1;
+
+    // draw health bar
+    SDL_FRect hp_rect = {
+      .x = icon_rect.x + icon_rect.w + (float)PLAYER_HP_BAR_PADDING,
+      .y = icon_rect.y,
+      .w = (p->hp / p->max_hp)*PLAYER_HP_BAR_WIDTH,
+      .h = (float)PLAYER_HP_BAR_HEIGHT,
+    };
+
+    if (SDL_RenderFillRectFColorPacked(p->ren, &hp_rect, SDL_GREEN) < 0)
+      return -1;
+    hp_rect.w = PLAYER_HP_BAR_WIDTH;
+    if (SDL_RenderDrawRectFColorPacked(p->ren, &hp_rect, SDL_WHITE) < 0)
+      return -1;
+
+    // draw magic bar
+    SDL_FRect mp_rect = {
+      .x = icon_rect.x + icon_rect.w + (float)PLAYER_MP_BAR_PADDING,
+      .y = icon_rect.y + hp_rect.h + (float)PLAYER_HP_BAR_PADDING,
+      .w = (p->mp / p->max_mp)*PLAYER_MP_BAR_WIDTH,
+      .h = (float)PLAYER_MP_BAR_HEIGHT,
+    };
+
+    if (SDL_RenderFillRectFColorPacked(p->ren, &mp_rect, SDL_BLUE) < 0)
+      return -1;
+    mp_rect.w = PLAYER_MP_BAR_WIDTH;
+    if (SDL_RenderDrawRectFColorPacked(p->ren, &mp_rect, SDL_WHITE) < 0)
+      return -1;
+  }
+
+  return 0;
+}

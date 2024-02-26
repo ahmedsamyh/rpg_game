@@ -8,6 +8,26 @@
 
 #define PI 3.1415f
 
+// Mouse
+enum {
+  MB_LEFT,
+  MB_RIGHT,
+  MB_MIDDLE,
+  MB_COUNT,
+};
+
+typedef struct {
+  bool released[(int)MB_COUNT];
+  bool pressed[(int)MB_COUNT];
+  bool held[(int)MB_COUNT];
+  SDL_FPoint pos;
+  SDL_FPoint unscaled_pos;
+  SDL_Renderer* ren;
+} Mouse;
+
+void Mouse_init(Mouse* m, SDL_Renderer* ren);
+void Mouse_button_update(Mouse* m);
+
 // Tmp buffer
 #define TMP_BUFF_CAP (1024*32)
 static char tmp_buff[TMP_BUFF_CAP] = {0};
@@ -37,6 +57,8 @@ int SDL_RenderDrawRectFColorPacked(SDL_Renderer* ren, const SDL_FRect* rect, uin
 int SDL_RenderFillRectFColor(SDL_Renderer* ren, const SDL_FRect* rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 int SDL_RenderFillRectFColorPacked(SDL_Renderer* ren, const SDL_FRect* rect, uint32_t color);
 int SDL_RenderCircleF(SDL_Renderer* ren, SDL_FPoint pos, float radius);
+int SDL_RenderCircleFColor(SDL_Renderer* ren, SDL_FPoint pos, float radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+int SDL_RenderCircleFColorPacked(SDL_Renderer* ren, SDL_FPoint pos, float radius, uint32_t color);
 int TTF_RenderText_BlendedColor(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 int TTF_RenderText_BlendedColorPacked(SDL_Renderer* ren, TTF_Font* font, SDL_FPoint pos, const char* text, uint32_t color);
 
@@ -50,7 +72,9 @@ SDL_FPoint v2f_mul(SDL_FPoint v1, SDL_FPoint v2);
 SDL_FPoint v2f_mul_scalar(SDL_FPoint v1, float s);
 
 // Texture
-SDL_Texture_wrapper* SDL_TextureLoad(SDL_Renderer* ren, const char* filename);
+SDL_Texture_wrapper* SDL_LoadTexture(SDL_Renderer* ren, const char* filename); // default from file
+SDL_Texture_wrapper* SDL_LoadTextureFromFile(SDL_Renderer* ren, const char* filename);
+SDL_Texture_wrapper* SDL_LoadTextureFromMemory(SDL_Renderer* ren, unsigned char* data, size_t data_size, const char* filename);
 
 // Sprite
 typedef struct {

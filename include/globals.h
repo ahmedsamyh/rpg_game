@@ -10,5 +10,10 @@ typedef struct {
 
 extern SDL_FRect* collboxes;
 extern SDL_Texture_wrapper_KV* texture_map;
+extern int screen_width;
+extern int screen_height;
+extern float width;
+extern float scl;
+extern float height;
 
 #endif /* _GLOBALS_H_ */

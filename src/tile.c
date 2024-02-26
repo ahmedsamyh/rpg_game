@@ -7,7 +7,7 @@
 int Tile_load_all_tiles(SDL_Renderer* ren){
   for (size_t i = 0; i < (size_t)TILE_TYPE_COUNT; ++i){
     snprintf(tmp_buff, TMP_BUFF_CAP, "resources/tile%zu.png", i);
-    if (SDL_TextureLoad(ren, tmp_buff) == NULL){
+    if (SDL_LoadTexture(ren, tmp_buff) == NULL){
       return -1;
     }
   }
@@ -33,7 +33,7 @@ int Tile_init(Tile* t, const Tile_type type, bool collidable, SDL_Renderer* ren)
   assert((int)t->type < (int)TILE_TYPE_COUNT);
 
   snprintf(tmp_buff, TMP_BUFF_CAP, "resources/tile%d.png", (int)t->type);
-  return SDL_LoadSprite(&t->spr, SDL_TextureLoad(ren, tmp_buff), 1, 1, t->ren);
+  return SDL_LoadSprite(&t->spr, SDL_LoadTexture(ren, tmp_buff), 1, 1, t->ren);
 }
 
 
