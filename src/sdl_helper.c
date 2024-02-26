@@ -13,6 +13,29 @@ void Mouse_init(Mouse* m, SDL_Renderer* ren){
 }
 
 void Mouse_button_update(Mouse* m) {
+  // reset states (excluding prev_state)
+  memcpy(m->prev_state, m->held, sizeof(bool)*(int)MB_COUNT);
+  memset(m->released, 0, sizeof(bool)*(int)MB_COUNT*3);
+
+  int x, y;
+  Uint32 state = SDL_GetMouseState(&x, &y);
+  m->unscaled_pos.x = (float)x;
+  m->unscaled_pos.y = (float)y;
+
+  if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) { m->held[MB_LEFT] = true; }
+  if (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) { m->held[MB_RIGHT] = true; }
+  if (state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) { m->held[MB_MIDDLE] = true; }
+
+  for (int i = 0; i < (int)MB_COUNT; ++i){
+    if (m->held[i] && !m->prev_state[i]){
+      m->pressed[i] = true;
+    }
+
+    if (!m->held[i] && m->prev_state[i]){
+      m->released[i] = true;
+    }
+  }
+
   float sx, sy;
   SDL_RenderGetScale(m->ren, &sx, &sy);
   m->pos.x = m->unscaled_pos.x / sx;

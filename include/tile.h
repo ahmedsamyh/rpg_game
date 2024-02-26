@@ -19,6 +19,8 @@ typedef struct {
 
 int Tile_load_all_tiles(SDL_Renderer* ren);
 int Tile_init(Tile* t, const Tile_type type, bool collidable, SDL_Renderer* ren);
+void Tile_set_collidable(Tile* t, bool collidable, Tile* tiles);
+int Tile_set_type(Tile* t, const Tile_type type);
 int Tile_draw(Tile* t, bool debug);
 
 #endif /* _TILE_H_ */

@@ -1,4 +1,5 @@
 *.exe
 *.dll
 SDL2/lib
-NUL
+embedded
+TAGS

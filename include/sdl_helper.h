@@ -20,6 +20,7 @@ typedef struct {
   bool released[(int)MB_COUNT];
   bool pressed[(int)MB_COUNT];
   bool held[(int)MB_COUNT];
+  bool prev_state[(int)MB_COUNT];
   SDL_FPoint pos;
   SDL_FPoint unscaled_pos;
   SDL_Renderer* ren;

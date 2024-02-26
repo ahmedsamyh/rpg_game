@@ -13,7 +13,7 @@
 #include <globals.h>
 #include <tile.h>
 #include <config.h>
-#include "youko-sheet.c"
+#include "embedded/youko-sheet.c"
 
 SDL_FRect* collboxes = NULL;
 SDL_Texture_wrapper_KV* texture_map;
@@ -129,7 +129,7 @@ int main(int argc, char* argv[]){
     char full_title[MAX_TITLE_SIZE];
 
     if (sprintf(full_title, "%s | FPS: %d | delta: %f", title, FPS, delta) < 0){
-      fprintf(stderr, "ERROR: sprintf() -> %s\n", strerror(errno));
+      SDL_LogError(SDL_LOG_CATEGORY_ERROR, "sprintf() -> %s\n", strerror(errno));
       quit = true;
     }
 
@@ -139,9 +139,6 @@ int main(int argc, char* argv[]){
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT){
 	quit = true;
-      } else if (e.type == SDL_MOUSEMOTION){
-	m.unscaled_pos.x = (float)e.motion.x;
-	m.unscaled_pos.y = (float)e.motion.y;
       } else if (e.type == SDL_KEYDOWN){
 	if (e.key.keysym.scancode == SDL_SCANCODE_TILDE){
 	  DEBUG_DRAW = !DEBUG_DRAW;
@@ -159,9 +156,11 @@ int main(int argc, char* argv[]){
     Player_update(&p, delta);
 
     // toggle-collision of tile on mouse click
-
     if (m.pressed[MB_LEFT]){
-      printf("HEL\n");
+      size_t idx = (int)(m.pos.y/TILE_SIZE) * cols + (int)(m.pos.x/TILE_SIZE);
+      SDL_assert(0 <= idx && idx < arrlen(tiles));
+
+      Tile_set_collidable(&tiles[idx], !tiles[idx].collidable, tiles);
     }
 
     for (size_t i = 0; i < arrlenu(tiles); ++i){
