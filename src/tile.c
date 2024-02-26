@@ -51,7 +51,15 @@ int Tile_set_type(Tile* t, const Tile_type type){
   SDL_assert((int)t->type < (int)TILE_TYPE_COUNT);
   t->type = type;
   snprintf(tmp_buff, TMP_BUFF_CAP, "resources/tile%d.png", (int)t->type);
-  return SDL_LoadSprite(&t->spr, SDL_LoadTexture(ren, tmp_buff), 1, 1, t->ren);
+  SDL_Sprite* tmp = (SDL_Sprite*)malloc(sizeof(SDL_Sprite));
+  memcpy(tmp, &t->spr, sizeof(SDL_Sprite));
+  if (SDL_LoadSprite(&t->spr, SDL_LoadTexture(t->ren, tmp_buff), 1, 1, t->ren) < 0){
+    return -1;
+  }
+  t->spr.pos = tmp->pos;
+
+  free(tmp);
+  return 0;
 }
 
 int Tile_draw(Tile* t, bool debug){

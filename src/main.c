@@ -160,7 +160,8 @@ int main(int argc, char* argv[]){
       size_t idx = (int)(m.pos.y/TILE_SIZE) * cols + (int)(m.pos.x/TILE_SIZE);
       SDL_assert(0 <= idx && idx < arrlen(tiles));
 
-      Tile_set_collidable(&tiles[idx], !tiles[idx].collidable, tiles);
+      Tile_set_collidable(&tiles[idx], true, tiles);
+      Tile_set_type(&tiles[idx], TILE_TYPE_BRICK);
     }
 
     for (size_t i = 0; i < arrlenu(tiles); ++i){

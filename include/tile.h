@@ -5,6 +5,7 @@
 
 typedef enum {
   TILE_TYPE_NONE = 0,
+  TILE_TYPE_BRICK,
   TILE_TYPE_COUNT,
 } Tile_type;
 

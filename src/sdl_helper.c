@@ -269,6 +269,10 @@ SDL_Texture_wrapper* SDL_LoadTexture(SDL_Renderer* ren, const char* filename){
 
 SDL_Texture_wrapper* SDL_LoadTextureFromFile(SDL_Renderer* ren, const char* filename){
   if (shgeti(texture_map, filename) >= 0){
+    if (shgetp_null(texture_map, filename)->value.num_try_loaded < TEXTURE_MAX_TRY_LOAD){
+      shgetp_null(texture_map, filename)->value.num_try_loaded++;
+      SDL_Log("Texture %zu `%s` is already loaded (%zu)", shgeti(texture_map, filename), filename, shgetp_null(texture_map, filename)->value.num_try_loaded);
+    }
     return &shgetp_null(texture_map, filename)->value;
   }
 
@@ -297,11 +301,16 @@ SDL_Texture_wrapper* SDL_LoadTextureFromFile(SDL_Renderer* ren, const char* file
 
   shput(texture_map, filename, tex_wrap);
 
+  SDL_Log("Texture %zu `%s` loaded from file", shgeti(texture_map, filename), filename);
   return &shgetp_null(texture_map, filename)->value;
 }
 
 SDL_Texture_wrapper* SDL_LoadTextureFromMemory(SDL_Renderer* ren, unsigned char* data, size_t data_size, const char* filename){
   if (shgeti(texture_map, filename) >= 0){
+    if (shgetp_null(texture_map, filename)->value.num_try_loaded < TEXTURE_MAX_TRY_LOAD){
+      shgetp_null(texture_map, filename)->value.num_try_loaded++;
+      SDL_Log("Texture %zu `%s` is already loaded (%zu)", shgeti(texture_map, filename), filename, shgetp_null(texture_map, filename)->value.num_try_loaded);
+    }
     return &shgetp_null(texture_map, filename)->value;
   }
 
@@ -330,6 +339,7 @@ SDL_Texture_wrapper* SDL_LoadTextureFromMemory(SDL_Renderer* ren, unsigned char*
 
   shput(texture_map, filename, tex_wrap);
 
+  SDL_Log("Texture %zu `%s` loaded from file", shgeti(texture_map, filename), filename);
   return &shgetp_null(texture_map, filename)->value;
 }
 
